@@ -35,6 +35,8 @@ class PeliculaController extends Controller
             'genero' => 'required|string|max:255',
             'poster_url' => 'nullable|string|max:2048',
             'calificacion' => 'nullable|numeric|min:0|max:10',
+            'favorita' => 'nullable|boolean',
+            'vista' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -96,6 +98,8 @@ class PeliculaController extends Controller
             'genero' => 'sometimes|required|string|max:255',
             'poster_url' => 'nullable|string|max:2048',
             'calificacion' => 'nullable|numeric|min:0|max:10',
+            'favorita' => 'nullable|boolean',
+            'vista' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {

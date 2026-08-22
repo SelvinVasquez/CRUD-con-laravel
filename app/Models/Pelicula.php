@@ -19,6 +19,8 @@ class Pelicula extends Model
         'genero',
         'poster_url',
         'calificacion',
+        'favorita',
+        'vista',
     ];
 
     /**
@@ -27,5 +29,7 @@ class Pelicula extends Model
     protected $casts = [
         'anio' => 'integer',
         'calificacion' => 'decimal:1',
+        'favorita' => 'boolean',
+        'vista' => 'boolean',
     ];
 }
