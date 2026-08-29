@@ -1,0 +1,144 @@
+{
+  "info": {
+    "name": "CRUD-con-laravel (Passport)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api" },
+    { "key": "token", "value": "" },
+    { "key": "pelicula_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Selvin\",\n  \"email\": \"selvin@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.data && data.data.token) {",
+                  "    pm.collectionVariables.set('token', data.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"selvin@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Peliculas",
+      "item": [
+        {
+          "name": "Listar peliculas",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/peliculas"
+          }
+        },
+        {
+          "name": "Crear pelicula",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.data && data.data.id) {",
+                  "    pm.collectionVariables.set('pelicula_id', data.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/peliculas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Inception\",\n  \"sinopsis\": \"Un ladron de suenos\",\n  \"anio\": 2010,\n  \"genero\": \"Ciencia ficcion\",\n  \"poster_url\": \"https://ejemplo.com/inception.jpg\",\n  \"calificacion\": 8.8,\n  \"favorita\": false,\n  \"vista\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Ver pelicula",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/peliculas/{{pelicula_id}}"
+          }
+        },
+        {
+          "name": "Actualizar pelicula",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/peliculas/{{pelicula_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"calificacion\": 9.0,\n  \"favorita\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar pelicula",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/peliculas/{{pelicula_id}}"
+          }
+        }
+      ]
+    }
+  ]
+}

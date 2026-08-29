@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Genera automáticamente las 7 rutas RESTful, protegidas con Sanctum:
+// Genera automáticamente las 7 rutas RESTful, protegidas con Passport:
 // GET    /api/peliculas           -> index
 // POST   /api/peliculas           -> store
 // GET    /api/peliculas/{id}      -> show
 // PUT    /api/peliculas/{id}      -> update
 // DELETE /api/peliculas/{id}      -> destroy
 Route::apiResource('peliculas', PeliculaController::class)
-    ->middleware('auth:sanctum');
+    ->middleware('auth:api');
