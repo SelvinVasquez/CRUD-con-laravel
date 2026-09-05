@@ -76,4 +76,29 @@ class AuthController extends Controller
             ],
         ], 200);
     }
+
+    /**
+     * GET /api/user
+     */
+    public function user(Request $request): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Usuario autenticado',
+            'data' => $request->user(),
+        ], 200);
+    }
+
+    /**
+     * POST /api/logout
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->token()->revoke();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesión cerrada correctamente',
+        ], 200);
+    }
 }

@@ -8,11 +8,15 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Genera automáticamente las 7 rutas RESTful, protegidas con Passport:
-// GET    /api/peliculas           -> index
-// POST   /api/peliculas           -> store
-// GET    /api/peliculas/{id}      -> show
-// PUT    /api/peliculas/{id}      -> update
-// DELETE /api/peliculas/{id}      -> destroy
-Route::apiResource('peliculas', PeliculaController::class)
-    ->middleware('auth:api');
+Route::middleware('auth:api')->group(function () {
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Genera automáticamente las 7 rutas RESTful, protegidas con Passport:
+    // GET    /api/peliculas           -> index
+    // POST   /api/peliculas           -> store
+    // GET    /api/peliculas/{id}      -> show
+    // PUT    /api/peliculas/{id}      -> update
+    // DELETE /api/peliculas/{id}      -> destroy
+    Route::apiResource('peliculas', PeliculaController::class);
+});

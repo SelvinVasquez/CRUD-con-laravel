@@ -12,9 +12,9 @@ class PeliculaController extends Controller
     /**
      * GET /api/peliculas
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $peliculas = Pelicula::all();
+        $peliculas = Pelicula::where('user_id', $request->user()->id)->get();
 
         return response()->json([
             'success' => true,
@@ -47,7 +47,9 @@ class PeliculaController extends Controller
             ], 422);
         }
 
-        $pelicula = Pelicula::create($validator->validated());
+        $pelicula = new Pelicula($validator->validated());
+        $pelicula->user_id = $request->user()->id;
+        $pelicula->save();
 
         return response()->json([
             'success' => true,
@@ -59,9 +61,9 @@ class PeliculaController extends Controller
     /**
      * GET /api/peliculas/{id}
      */
-    public function show(string $id): JsonResponse
+    public function show(Request $request, string $id): JsonResponse
     {
-        $pelicula = Pelicula::find($id);
+        $pelicula = Pelicula::where('user_id', $request->user()->id)->find($id);
 
         if (! $pelicula) {
             return response()->json([
@@ -82,7 +84,7 @@ class PeliculaController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        $pelicula = Pelicula::find($id);
+        $pelicula = Pelicula::where('user_id', $request->user()->id)->find($id);
 
         if (! $pelicula) {
             return response()->json([
@@ -122,9 +124,9 @@ class PeliculaController extends Controller
     /**
      * DELETE /api/peliculas/{id}
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
-        $pelicula = Pelicula::find($id);
+        $pelicula = Pelicula::where('user_id', $request->user()->id)->find($id);
 
         if (! $pelicula) {
             return response()->json([
