@@ -54,6 +54,67 @@
               "raw": "{\n  \"email\": \"selvin@example.com\",\n  \"password\": \"password123\"\n}"
             }
           }
+        },
+        {
+          "name": "Login (scope limitado - solo lectura)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.data && data.data.token) {",
+                  "    pm.collectionVariables.set('token', data.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"selvin@example.com\",\n  \"password\": \"password123\",\n  \"scopes\": [\"peliculas.read\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Usuario autenticado",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/user"
+          }
+        },
+        {
+          "name": "Token info (scopes del token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/token-info"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/logout"
+          }
         }
       ]
     },
