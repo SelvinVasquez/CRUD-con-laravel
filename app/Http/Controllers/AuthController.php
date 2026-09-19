@@ -46,6 +46,8 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email',
             'password' => 'required|string',
+            'scopes' => 'sometimes|array',
+            'scopes.*' => 'string|in:peliculas.read,peliculas.write,peliculas.delete',
         ]);
 
         if ($validator->fails()) {
@@ -65,7 +67,10 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $token = $user->createToken('api-token')->accessToken;
+        // Si el cliente no pide scopes específicos, el token recibe acceso completo
+        $scopes = $request->input('scopes', ['peliculas.read', 'peliculas.write', 'peliculas.delete']);
+
+        $token = $user->createToken('api-token', $scopes)->accessToken;
 
         return response()->json([
             'success' => true,

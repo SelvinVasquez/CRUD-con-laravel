@@ -126,6 +126,13 @@ class PeliculaController extends Controller
      */
     public function destroy(Request $request, string $id): JsonResponse
     {
+        if ($request->user()->tokenCant('peliculas.delete')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para eliminar películas',
+            ], 403);
+        }
+
         $pelicula = Pelicula::where('user_id', $request->user()->id)->find($id);
 
         if (! $pelicula) {
