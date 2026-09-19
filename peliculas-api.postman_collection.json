@@ -6,7 +6,7 @@
   "variable": [
     { "key": "base_url", "value": "http://127.0.0.1:8000/api" },
     { "key": "token", "value": "" },
-    { "key": "pelicula_id", "value": "" }
+    { "key": "pelicula_id", "value": "1" }
   ],
   "item": [
     {
@@ -81,7 +81,8 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"selvin@example.com\",\n  \"password\": \"password123\",\n  \"scopes\": [\"peliculas.read\"]\n}"
             }
-          }
+          },
+          "description": "Pide un token restringido solo a lectura. A partir de aqui, Crear/Eliminar pelicula deben dar 403 hasta volver a hacer Login sin 'scopes'."
         },
         {
           "name": "Usuario autenticado",
@@ -92,7 +93,8 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{base_url}}/user"
-          }
+          },
+          "description": "200 OK mientras el token sea valido; si se llama despues de Logout con el mismo token, debe dar 401 Unauthenticated."
         },
         {
           "name": "Token info (scopes del token)",
@@ -103,7 +105,8 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{base_url}}/token-info"
-          }
+          },
+          "description": "Muestra el campo 'scopes' del token actual y 'expires' (fecha de expiracion)."
         },
         {
           "name": "Logout",
@@ -114,7 +117,8 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{base_url}}/logout"
-          }
+          },
+          "description": "Revoca el token actual. Repetir 'Usuario autenticado' despues de esto debe dar 401."
         }
       ]
     },
@@ -159,7 +163,8 @@
               "mode": "raw",
               "raw": "{\n  \"titulo\": \"Inception\",\n  \"sinopsis\": \"Un ladron de suenos\",\n  \"anio\": 2010,\n  \"genero\": \"Ciencia ficcion\",\n  \"poster_url\": \"https://ejemplo.com/inception.jpg\",\n  \"calificacion\": 8.8,\n  \"favorita\": false,\n  \"vista\": true\n}"
             }
-          }
+          },
+          "description": "Requiere scope peliculas.write. Con un token de solo lectura da 403; con un token de acceso completo da 201 y guarda el id en {{pelicula_id}}."
         },
         {
           "name": "Ver pelicula",
@@ -197,7 +202,8 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{base_url}}/peliculas/{{pelicula_id}}"
-          }
+          },
+          "description": "Verificado con tokenCan('peliculas.delete') en el controlador (no middleware). Con un token de solo lectura da 403 sin importar si {{pelicula_id}} existe, porque el scope se valida antes de buscar en la base de datos."
         }
       ]
     }
