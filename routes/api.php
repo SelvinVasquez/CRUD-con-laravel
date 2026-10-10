@@ -2,29 +2,18 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PeliculaController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Rutas de autenticación (sin protección)
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// Rutas de autenticación (sin protección). Limitadas a 5 intentos por minuto
+// para frenar ataques de fuerza bruta.
+Route::middleware('throttle:5,1')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
 
 Route::middleware('auth:api')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
-
-    // Endpoint de debugging para inspeccionar los scopes del token actual.
-    // Eliminar antes de pasar a producción.
-    Route::get('/token-info', function (Request $request) {
-        $token = $request->user()->token();
-
-        return response()->json([
-            'token_id' => $token->id,
-            'scopes' => $token->scopes,
-            'user' => $request->user()->only('id', 'name', 'email'),
-            'expires' => $token->expires_at,
-        ]);
-    });
 
     // Genera automáticamente las 7 rutas RESTful, protegidas con Passport:
     // GET    /api/peliculas           -> index

@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Detrás del proxy HTTPS de la nube, confía en los encabezados X-Forwarded-*
+        $middleware->trustProxies(at: '*');
+
         $middleware->api(prepend: [
             ForceJsonResponse::class,
         ]);
