@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PeliculaController;
+use App\Http\Controllers\PublicoController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas de autenticación (sin protección). Limitadas a 5 intentos por minuto
@@ -25,4 +26,21 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('peliculas', PeliculaController::class)
         ->middlewareFor(['index', 'show'], 'scope:peliculas.read')
         ->middlewareFor(['store', 'update'], 'scope:peliculas.write');
+});
+
+// API pública del grupo (sin login): catálogo general, categorías, ranking y reviews.
+// Las escrituras tienen un límite de 30 peticiones por minuto.
+Route::prefix('publico')->group(function () {
+    Route::get('/peliculas', [PublicoController::class, 'peliculas']);
+    Route::get('/peliculas/ranking', [PublicoController::class, 'ranking']);
+    Route::get('/peliculas/{id}', [PublicoController::class, 'pelicula']);
+    Route::get('/peliculas/{id}/reviews', [PublicoController::class, 'reviews']);
+    Route::get('/categorias', [PublicoController::class, 'categorias']);
+
+    Route::middleware('throttle:30,1')->group(function () {
+        Route::post('/peliculas', [PublicoController::class, 'registrar']);
+        Route::post('/peliculas/{id}/visualizar', [PublicoController::class, 'visualizar']);
+        Route::post('/peliculas/{id}/reviews', [PublicoController::class, 'crearReview']);
+        Route::post('/categorias', [PublicoController::class, 'crearCategoria']);
+    });
 });
