@@ -10,6 +10,28 @@ use Illuminate\Support\Facades\Validator;
 class PeliculaController extends Controller
 {
     /**
+     * Indica si el usuario ya tiene una película con el mismo título y año
+     * (sin distinguir mayúsculas). $ignorarId excluye la película que se edita.
+     */
+    private function esDuplicada(int $userId, string $titulo, int $anio, ?int $ignorarId = null): bool
+    {
+        return Pelicula::where('user_id', $userId)
+            ->whereRaw('LOWER(titulo) = ?', [mb_strtolower(trim($titulo))])
+            ->where('anio', $anio)
+            ->when($ignorarId, fn ($q) => $q->where('id', '!=', $ignorarId))
+            ->exists();
+    }
+
+    private function respuestaDuplicada(): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error de validación',
+            'errors' => ['titulo' => ['Esta película ya está en tu lista.']],
+        ], 422);
+    }
+
+    /**
      * GET /api/peliculas
      */
     public function index(Request $request): JsonResponse
@@ -47,8 +69,13 @@ class PeliculaController extends Controller
             ], 422);
         }
 
+        if ($this->esDuplicada($request->user()->id, $request->input('titulo'), (int) $request->input('anio'))) {
+            return $this->respuestaDuplicada();
+        }
+
         $pelicula = new Pelicula($validator->validated());
         $pelicula->user_id = $request->user()->id;
+        $pelicula->visualizaciones = $pelicula->vista ? 1 : 0;
         $pelicula->save();
 
         return response()->json([
@@ -110,6 +137,18 @@ class PeliculaController extends Controller
                 'message' => 'Error de validación',
                 'errors' => $validator->errors(),
             ], 422);
+        }
+
+        $titulo = $request->input('titulo', $pelicula->titulo);
+        $anio = (int) $request->input('anio', $pelicula->anio);
+
+        if ($this->esDuplicada($request->user()->id, $titulo, $anio, $pelicula->id)) {
+            return $this->respuestaDuplicada();
+        }
+
+        // Marcar como vista por primera vez suma una visualización al ranking público.
+        if ($request->boolean('vista') && ! $pelicula->vista) {
+            $pelicula->visualizaciones++;
         }
 
         $pelicula->update($validator->validated());
