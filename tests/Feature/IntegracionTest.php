@@ -42,7 +42,7 @@ test('registra un viaje forzando el estado completado', function () {
     Passport::actingAs(User::factory()->create());
 
     $this->postJson('/api/integraciones/viajes', [
-        'destino' => 'Tikal', 'fecha_inicio' => '2026-09-01', 'fecha_fin' => '2026-09-03', 'estado' => 'planeado',
+        'destino' => 'Tikal', 'fecha_inicio' => '2026-09-01', 'fecha_fin' => '2026-09-03', 'descripcion' => 'Visita', 'estado' => 'planeado',
     ])->assertCreated();
 
     Http::assertSent(fn ($r) => str_contains($r->url(), 'completados') && $r['estado'] === 'completado');
@@ -53,7 +53,7 @@ test('valida las fechas del viaje antes de llamar a la API externa', function ()
     Passport::actingAs(User::factory()->create());
 
     $this->postJson('/api/integraciones/viajes', [
-        'destino' => 'Tikal', 'fecha_inicio' => '2026-09-05', 'fecha_fin' => '2026-09-01',
+        'destino' => 'Tikal', 'descripcion' => 'x', 'fecha_inicio' => '2026-09-05', 'fecha_fin' => '2026-09-01',
     ])->assertUnprocessable();
 
     Http::assertNothingSent();
