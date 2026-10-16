@@ -73,20 +73,44 @@ class IntegracionController extends Controller
         return $this->llamar(fn () => $this->perfilesHttp()->get('/users'), 'perfiles');
     }
 
+    /** Paso 1: la API de Jose envía un código de verificación al correo; todavía no crea el usuario. */
     public function crearPerfil(Request $request): JsonResponse
     {
         $datos = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:6', 'max:255'],
+            // Mismas reglas que exige la API de Jose: 8+ caracteres, una mayúscula y un carácter especial.
+            'password' => ['required', 'string', 'min:8', 'max:255', 'regex:/[A-Z]/', 'regex:/[^A-Za-z0-9]/'],
+        ], [
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.regex' => 'La contraseña necesita una letra mayúscula y un carácter especial (por ejemplo ! @ # $).',
         ]);
 
-        // El registro de la API de Jose es público: no necesita el token de administrador.
         return $this->llamar(
-            fn () => Http::baseUrl(config('services.perfiles.url'))->acceptJson()->timeout(15)->post('/auth/register', $datos),
+            fn () => $this->perfilesPublico()->post('/auth/register/request-code', $datos),
+            'perfiles',
+            202
+        );
+    }
+
+    /** Paso 2: confirma el código recibido por correo y crea el usuario en la API de Jose. */
+    public function verificarPerfil(Request $request): JsonResponse
+    {
+        $datos = $request->validate([
+            'email' => ['required', 'email', 'max:255'],
+            'code' => ['required', 'digits:6'],
+        ]);
+
+        return $this->llamar(
+            fn () => $this->perfilesPublico()->post('/auth/register/verify', $datos),
             'perfiles',
             201
         );
+    }
+
+    private function perfilesPublico(): PendingRequest
+    {
+        return Http::baseUrl(config('services.perfiles.url'))->acceptJson()->timeout(20);
     }
 
     private function perfilesHttp(): PendingRequest

@@ -71,13 +71,35 @@ test('lista perfiles con el login de administrador de Jose', function () {
         ->assertJsonPath('data.0.name', 'Ana');
 });
 
-test('registra un perfil sin necesitar el token de administrador', function () {
-    Http::fake(['*/auth/register' => Http::response(['token' => 't', 'user' => ['id' => '2']], 201)]);
+test('pide el código de verificación al registrar un perfil', function () {
+    Http::fake(['*/auth/register/request-code' => Http::response(['message' => 'Código enviado', 'expiresInMinutes' => 10], 202)]);
+    Passport::actingAs(User::factory()->create());
+
+    $this->postJson('/api/integraciones/perfiles', [
+        'name' => 'Luis', 'email' => 'luis@x.com', 'password' => 'Secreto!1',
+    ])->assertStatus(202)->assertJsonPath('data.expiresInMinutes', 10);
+});
+
+test('rechaza contraseñas que no cumplen la política de Jose', function () {
+    Http::fake();
     Passport::actingAs(User::factory()->create());
 
     $this->postJson('/api/integraciones/perfiles', [
         'name' => 'Luis', 'email' => 'luis@x.com', 'password' => 'secreto1',
-    ])->assertCreated();
+    ])->assertUnprocessable()->assertJsonValidationErrors('password');
+
+    Http::assertNothingSent();
+});
+
+test('verifica el código y no reenvía el token de sesión de Jose', function () {
+    Http::fake(['*/auth/register/verify' => Http::response(['token' => 'jwt', 'user' => ['id' => '20', 'email' => 'luis@x.com']], 201)]);
+    Passport::actingAs(User::factory()->create());
+
+    $r = $this->postJson('/api/integraciones/perfiles/verificar', ['email' => 'luis@x.com', 'code' => '123456'])
+        ->assertCreated()
+        ->assertJsonPath('data.user.email', 'luis@x.com');
+
+    expect($r->json('data'))->not->toHaveKey('token');
 });
 
 test('devuelve 503 si falta configurar las credenciales', function () {

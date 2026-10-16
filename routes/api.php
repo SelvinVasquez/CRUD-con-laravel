@@ -23,6 +23,7 @@ Route::middleware('auth:api')->group(function () {
     Route::middleware('throttle:30,1')->group(function () {
         Route::post('/integraciones/viajes', [IntegracionController::class, 'crearViaje']);
         Route::post('/integraciones/perfiles', [IntegracionController::class, 'crearPerfil']);
+        Route::post('/integraciones/perfiles/verificar', [IntegracionController::class, 'verificarPerfil']);
     });
 
     // Genera automáticamente las 7 rutas RESTful, protegidas con Passport:
