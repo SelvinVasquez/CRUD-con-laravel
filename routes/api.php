@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\IntegracionController;
 use App\Http\Controllers\PeliculaController;
 use App\Http\Controllers\PublicoController;
 use Illuminate\Support\Facades\Route;
@@ -15,6 +16,14 @@ Route::middleware('throttle:5,1')->group(function () {
 Route::middleware('auth:api')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Integraciones con las APIs de los compañeros (los secretos viven en el servidor).
+    Route::get('/integraciones/viajes', [IntegracionController::class, 'viajes']);
+    Route::get('/integraciones/perfiles', [IntegracionController::class, 'perfiles']);
+    Route::middleware('throttle:30,1')->group(function () {
+        Route::post('/integraciones/viajes', [IntegracionController::class, 'crearViaje']);
+        Route::post('/integraciones/perfiles', [IntegracionController::class, 'crearPerfil']);
+    });
 
     // Genera automáticamente las 7 rutas RESTful, protegidas con Passport:
     // GET    /api/peliculas           -> index

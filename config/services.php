@@ -28,6 +28,20 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // APIs de los compañeros del grupo. Los secretos se definen solo en el entorno.
+    'viajes' => [
+        'url' => env('VIAJES_API_URL', 'https://agenda-viajes-laes18-api.azurewebsites.net'),
+        'client_id' => env('VIAJES_CLIENT_ID'),
+        'client_secret' => env('VIAJES_CLIENT_SECRET'),
+        'scope' => 'integraciones.completados.read integraciones.viajes.write',
+    ],
+
+    'perfiles' => [
+        'url' => env('PERFILES_API_URL', 'https://api.proyect.fun/api'),
+        'email' => env('PERFILES_ADMIN_EMAIL'),
+        'password' => env('PERFILES_ADMIN_PASSWORD'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
