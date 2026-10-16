@@ -33,7 +33,7 @@ class IntegracionController extends Controller
             'pais' => ['nullable', 'string', 'max:255'],
             'fecha_inicio' => ['required', 'date_format:Y-m-d'],
             'fecha_fin' => ['required', 'date_format:Y-m-d', 'after_or_equal:fecha_inicio'],
-            'descripcion' => ['nullable', 'string', 'max:2000'],
+            'descripcion' => ['required', 'string', 'max:2000'],
             'presupuesto' => ['nullable', 'numeric', 'min:0'],
             'moneda' => ['nullable', 'string', 'max:5'],
         ]);
@@ -52,13 +52,13 @@ class IntegracionController extends Controller
         abort_if(! $cfg['client_id'] || ! $cfg['client_secret'], 503, 'Integración de viajes no configurada.');
 
         $token = Cache::remember('viajes_token', 3000, function () use ($cfg) {
-            $r = Http::asForm()->acceptJson()->timeout(15)->post($cfg['url'].'/oauth/token', [
+            $r = Http::asForm()->acceptJson()->timeout(20)->retry(2, 700, throw: false)->post($cfg['url'].'/oauth/token', [
                 'grant_type' => 'client_credentials',
                 'client_id' => $cfg['client_id'],
                 'client_secret' => $cfg['client_secret'],
                 'scope' => $cfg['scope'],
             ]);
-            abort_if(! $r->successful() || ! $r->json('access_token'), 502, 'No se pudo autenticar con la API de viajes.');
+            abort_if(! $r->successful() || ! $r->json('access_token'), 502, 'No se pudo autenticar con la API de viajes (respuesta '.$r->status().').');
 
             return $r->json('access_token');
         });
